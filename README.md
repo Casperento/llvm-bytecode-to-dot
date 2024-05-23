@@ -1,5 +1,8 @@
 # LLVM - Bytecode to DOT
-A LLVM pass that prints bytecode programs into the dot format. This is a project for the DCC888 class.
+
+A LLVM pass that prints bytecode programs into the dot format.
+
+This is a [DCC888 class](https://homepages.dcc.ufmg.br/~fernando/classes/dcc888/) project assignment.
 
 # Description
 
