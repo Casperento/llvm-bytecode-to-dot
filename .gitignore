@@ -34,3 +34,10 @@
 # CLion
 cmake-build-debug/
 .idea/
+
+# LLVM
+*.ll
+*.bc
+
+# Files
+*.pdf
