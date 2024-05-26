@@ -18,7 +18,8 @@ PreservedAnalyses BytecodeToDotPass::run(Function &F,
 
     std::ofstream dotfile;
     dotfile.open(dotfile_path, std::ios_base::app);
-    dotfile << "digraph \"CFG for '" << F.getNameOrAsOperand() << "' function\"{\n";
+    dotfile << "digraph G {\n";
+    dotfile << "label=\"CFG for '" << F.getNameOrAsOperand() << "' function\";";
     for (BasicBlock &BB : F) {
         for (BasicBlock *pred : predecessors(&BB))
             dotfile << "Node_" << pred->getValueName() << " -> " << "Node_" << BB.getValueName() << ";\n";
