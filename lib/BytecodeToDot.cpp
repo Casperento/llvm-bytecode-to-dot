@@ -4,83 +4,76 @@ using namespace llvm;
 
 PreservedAnalyses BytecodeToDotPass::run(Function &F,
                                          FunctionAnalysisManager &AM) {
-    errs() << "\t\tFunction Name: " << F.getName() << "\n";
+    std::string module_name = F.getParent()->getName().str();
+    std::string dotfilename = module_name + "_" + F.getNameOrAsOperand() + ".dot";
+
+    if (std::filesystem::exists(dotfilename))
+        remove(dotfilename.c_str());
+
+    std::ofstream dotfile;
+    dotfile.open(dotfilename, std::ios_base::app);
+    dotfile << "digraph \"CFG for '" << F.getNameOrAsOperand() << "' function\"{\n";
     for (BasicBlock &BB : F) {
-        errs() << BB.getName() << "\n";
+        for (BasicBlock *pred : predecessors(&BB))
+            dotfile << "Node_" << pred->getValueName() << " -> " << "Node_" << BB.getValueName() << ";\n";
+
+        dotfile << "Node_" << BB.getValueName() << " [shape=record,label=\"{";
+        dotfile << BB.getName().str() << ":\\l\\l";
         for (Instruction &I : BB) {
-            errs() << " ";
+            dotfile << " ";
             if (I.getNameOrAsOperand() != "<badref>") {
                 if (I.hasName())
-                    errs() << "%";
-                errs() << I.getNameOrAsOperand() << " = ";
+                    dotfile << "%";
+                dotfile << I.getNameOrAsOperand() << " = ";
             }
-            errs() << I.getOpcodeName() << " ";
+            dotfile << I.getOpcodeName() << " ";
 
             size_t numOperands = I.getNumOperands();
             if (isa<CallInst>(I)) {
                 std::string funcName = I.getOperand(--numOperands)->getNameOrAsOperand();
-                errs() << "@" << funcName << "(";
+                dotfile << "@" << funcName << "(";
                 for (Use &U: I.operands()) {
                     Value *val = U.get();
                     if (val->getNameOrAsOperand() == funcName) {
                         continue;
                     }
                     if (val->hasName())
-                        errs() << "%";
-                    errs() << val->getNameOrAsOperand();
+                        dotfile << "%";
+                    dotfile << val->getNameOrAsOperand();
                     if (--numOperands != 0)
-                        errs() << ", ";
+                        dotfile << ", ";
                 }
-                errs() << ")";
+                dotfile << ")";
             } else if (auto *PN = dyn_cast<PHINode>(&I)) {
                 for (auto &bb : PN->blocks()) {
                     Value *val = PN->getIncomingValueForBlock(bb);
-                    errs() << "[ ";
+                    dotfile << "[ ";
                     if (val->hasName())
-                        errs() << "%";
-                    errs() << val->getNameOrAsOperand() << ", ";
+                        dotfile << "%";
+                    dotfile << val->getNameOrAsOperand() << ", ";
                     if (bb->hasName())
-                        errs() << "%";
-                    errs() << bb->getNameOrAsOperand() << " ]";
+                        dotfile << "%";
+                    dotfile << bb->getNameOrAsOperand() << " ]";
                     if (--numOperands != 0)
-                        errs() << ", ";
+                        dotfile << ", ";
                 }
             } else {
                 for (Use &U : I.operands()) {
                     Value *val = U.get();
                     if (val->hasName())
-                        errs() << "%";
-                    errs() << val->getNameOrAsOperand();
+                        dotfile << "%";
+                    dotfile << val->getNameOrAsOperand();
                     if (--numOperands != 0)
-                        errs() << ", ";
+                        dotfile << ", ";
                 }
             }
-            errs() << "\n";
+            dotfile << "\\l";
         }
-//        errs() << BB << "\n";
-//        for (Instruction &I : instructions(F)) {
-//            if (isa<BranchInst>(I))
-//                errs() << "\t\t\tInstruction (type is BranchInst):\n";
-//            else if (isa<ReturnInst>(I))
-//                errs() << "\t\t\tInstruction (type is ReturnInst):\n";
-//            else if (isa<CallInst>(I))
-//                errs() << "\t\t\tInstruction (type is CallInst):\n";
-//            else if (isa<BinaryOperator>(I))
-//                errs() << "\t\t\tInstruction (type is BinaryOperator):" << "\n";
-//            else if (isa<PHINode>(I))
-//                errs() << "\t\t\tInstruction (type is PHINode):" << "\n";
-//            else if (isa<StoreInst>(I))
-//                errs() << "\t\t\tInstruction (type is StoreInst):" << "\n";
-//            else if (isa<LoadInst>(I))
-//                errs() << "\t\t\tInstruction (type is LoadInst):" << "\n";
-//            else if (isa<TruncInst>(I))
-//                errs() << "\t\t\tInstruction (type is TruncInst):" << "\n";
-//            else if (isa<AllocaInst>(I))
-//                errs() << "\t\t\tInstruction (type is AllocaInst):" << "\n";
-//
-//            errs() << "\t\t\t\t" << I << "\n";
-//        }
+        dotfile << "}\"];\n";
     }
+    dotfile << "}\n";
+    dotfile.close();
+
     return PreservedAnalyses::all();
 }
 
