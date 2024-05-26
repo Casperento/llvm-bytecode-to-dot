@@ -53,3 +53,5 @@ To generate the PDF files from the DOT files, run the following commands:
 $ chmod +x pdf_gen.sh
 $ ./pdf_gen.sh
 ```
+
+The PDF files can be found in the **tests/Stanford** folder.
