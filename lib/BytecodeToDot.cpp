@@ -5,13 +5,19 @@ using namespace llvm;
 PreservedAnalyses BytecodeToDotPass::run(Function &F,
                                          FunctionAnalysisManager &AM) {
     std::string module_name = F.getParent()->getName().str();
-    std::string dotfilename = module_name + "_" + F.getNameOrAsOperand() + ".dot";
+    std::string dotfilename = F.getNameOrAsOperand() + ".dot";
 
-    if (std::filesystem::exists(dotfilename))
-        remove(dotfilename.c_str());
+    std::filesystem::path module_files_path(module_name + "_Files");
+    std::filesystem::path dotfile_path = module_files_path / dotfilename;
+
+    if (!std::filesystem::exists(module_files_path))
+        std::filesystem::create_directory(module_files_path);
+
+    if (std::filesystem::exists(dotfile_path))
+        std::filesystem::remove(dotfile_path);
 
     std::ofstream dotfile;
-    dotfile.open(dotfilename, std::ios_base::app);
+    dotfile.open(dotfile_path, std::ios_base::app);
     dotfile << "digraph \"CFG for '" << F.getNameOrAsOperand() << "' function\"{\n";
     for (BasicBlock &BB : F) {
         for (BasicBlock *pred : predecessors(&BB))

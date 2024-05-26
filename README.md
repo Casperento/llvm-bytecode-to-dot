@@ -47,11 +47,13 @@ Also, every DOT file is generated in the same directory as its relative **.ll** 
 
 #### PDF
 
-To generate the PDF files from the DOT files, run the following commands:
+To generate the PDF files from the DOT files, go to the root of the repo again and run the following commands:
 
 ```bash
 $ chmod +x pdf_gen.sh
 $ ./pdf_gen.sh
 ```
 
-The PDF files can be found in the **tests/Stanford** folder.
+The PDF files for each CFG can be found in the **tests/Stanford/TestName.ll_Files/FunctionName.dot.pdf** folder.
+
+If python's **img2pdf** package is installed, pdf files get merged into a single file called **tests/Stanford/TestName.ll_merged.pdf**.
